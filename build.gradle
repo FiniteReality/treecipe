@@ -1,0 +1,73 @@
+import org.jetbrains.gradle.ext.GradleTask
+import org.jetbrains.gradle.ext.Make
+import org.jetbrains.gradle.ext.ShortenCommandLine
+
+plugins {
+    id 'eclipse'
+    id 'idea'
+    id 'org.jetbrains.gradle.plugin.idea-ext' version '1.1.6'
+}
+
+idea {
+    module {
+        downloadJavadoc = true
+    }
+}
+
+configurations {
+    neoforgeMod {
+        canBeConsumed = false
+        canBeResolved = true
+
+        attributes {
+            attribute(Attribute.of('neogradleRun', Boolean), true)
+        }
+    }
+}
+
+dependencies {
+    neoforgeMod('finitereality.treecipe:neoforge') {
+        capabilities {
+            requireCapability "finitereality.treecipe:neoforge-runtime"
+        }
+    }
+}
+
+def postSyncTask = tasks.register('idePostSync') {
+    group 'neogradle'
+}
+
+rootProject.idea.project.settings {
+    taskTriggers {
+        afterSync postSyncTask
+    }
+}
+
+static def upperFirstLetter(String value) { value.replaceFirst(/[a-z]/) { it[0].toUpperCase() } }
+
+project.configurations.neoforgeMod.resolvedConfiguration.resolvedArtifacts.each { runProps ->
+    var projectName = runProps.moduleVersion.id.group - 'finitereality.'
+    var runName = "${projectName} ${runProps.moduleVersion.id.name} ${runProps.name}"
+    var props = new Properties().tap { if (runProps.file.exists()) { it.load(runProps.file.newReader()) } }
+
+    postSyncTask.configure {
+        dependsOn gradle.includedBuild(runProps.moduleVersion.id.name).task(":idePostSync")
+    }
+
+    var beforeRunTask = tasks.register("${projectName}${upperFirstLetter(runProps.moduleVersion.id.name)}${upperFirstLetter(runProps.name)}IdeBeforeRun") {
+        dependsOn gradle.includedBuild(runProps.moduleVersion.id.name).task(":${props.ideBeforeRunTask}")
+    }
+    rootProject.idea.project.settings.runConfigurations.register(runName, org.jetbrains.gradle.ext.Application) { app ->
+        app.moduleName = props.ideaModule ?: "${runProps.moduleVersion.id.name}.main"
+        app.shortenCommandLine = ShortenCommandLine.ARGS_FILE
+        app.mainClass = props.mainClass
+        app.workingDirectory = props.workingDirectory
+        app.jvmArgs = props.jvmArguments
+        app.programParameters = props.programArguments
+
+        app.beforeRun.create("Build", Make)
+        app.beforeRun.create("Prepare Run", GradleTask) {
+            it.task = beforeRunTask.get()
+        }
+    }
+}

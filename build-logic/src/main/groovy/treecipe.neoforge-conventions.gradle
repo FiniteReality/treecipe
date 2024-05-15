@@ -1,0 +1,115 @@
+plugins {
+    id 'treecipe.library-conventions'
+    id 'net.neoforged.gradle.userdev'
+    id 'finitereality.modlocator'
+}
+
+def prefix(feature, name, nameUpper) {
+    feature == components.java.mainFeature ? name : "${feature.name}${nameUpper}"
+};
+
+components.java.features.configureEach { feature ->
+    var jarJarName = prefix(feature, 'jarJar', 'JarJar');
+    var runtimeLibraryName = prefix(feature, 'runtimeLibrary', 'RuntimeLibrary')
+    var neogradleRunsName = prefix(feature, 'neogradleRuns', 'NeogradleRuns')
+
+    var runtimeLib = configurations.create(runtimeLibraryName) {
+        canBeResolved = true
+        canBeConsumed = false
+    }
+    feature.implementationConfiguration.extendsFrom runtimeLib
+
+    var capabilityName = feature == components.java.mainFeature
+        ? project.name
+        : "${project.name}-${feature.name}"
+    configurations.named(jarJarName) {
+        outgoing.capabilities.removeIf { it.name == project.name }
+        outgoing.capability("${project.group}:${capabilityName}:${project.version}")
+    }
+
+    var prepareRunMetadataName = prefix(feature, 'prepareRunMetadata', 'PrepareRunMetadata')
+    var runsConfig = configurations.create(neogradleRunsName) {
+        canBeResolved = false
+        canBeConsumed = true
+
+        attributes {
+            attribute(Attribute.of('neogradleRun', Boolean), true)
+        }
+
+        outgoing.capabilities.removeIf { it.name == project.name }
+        outgoing.capability("${project.group}:${capabilityName}:${project.version}")
+    }
+
+    runs.configureEach { run ->
+        var task = tasks.named(prepareRunMetadataName)
+        var output = task.flatMap { it.outputDirectory.file(run.name + ".properties") }
+
+        runsConfig.outgoing.artifact(output) {
+            builtBy(task)
+        }
+    }
+
+}
+
+runs {
+    configureEach {
+        jvmArgument '-XX:+AllowEnhancedClassRedefinition'
+
+        dependencies {
+            runtime 'finitereality.modlocator:neoforge'
+        }
+    }
+}
+
+abstract class ModInfoExtension {
+    abstract MapProperty<String, Object> getExpandedProperties();
+    abstract ListProperty<String> getFilesMatching();
+
+    void modProperty(Map<String, Object> values) {
+        modProperties(values)
+    }
+
+    void modProperties(Map<String, Object> values) {
+        values.forEach { key, value ->
+            if (value instanceof Provider)
+                expandedProperties.put(key, (Provider)value)
+            else
+                expandedProperties.put(key, value)
+        }
+    }
+
+    void filesMatching(Iterable<String> patterns) {
+        getFilesMatching().addAll(patterns)
+    }
+}
+
+var modInfoExt = project.extensions.create('modInfo', ModInfoExtension)
+modInfoExt.expandedProperties.putAll([
+    mod_group: project.group,
+    mod_id: project.group - 'finitereality.',
+    mod_version: project.version
+])
+modInfoExt.filesMatching.addAll(['META-INF/**', '*.json', '*.mcmeta'])
+
+tasks.withType(ProcessResources).configureEach {
+    inputs.property('expandedProperties', modInfo.expandedProperties)
+    inputs.property('matchedFiles', modInfo.filesMatching)
+
+    exclude '.cache/**'
+
+    filesMatching(inputs.properties.matchedFiles) {
+        expand inputs.properties.expandedProperties
+    }
+}
+
+tasks.named('jar', Jar).configure {
+    manifest {
+        attributes([
+                'Specification-Title': rootProject.name,
+                'Specification-Version': version,
+                'Implementation-Title': project.name,
+                'Implementation-Version': project.jar.archiveVersion,
+                'Implementation-Timestamp': new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+        ])
+    }
+}

@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "package": "${mod_group}.neoforge.mixins",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "SmithingRecipeMixin"
+  ],
+  "client": [
+    "client.MinecraftMixin"
+  ],
+  "minVersion": "0.7"
+}

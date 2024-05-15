@@ -1,0 +1,14 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+
+    id 'treecipe.java-conventions'
+}
+
+publishing {
+    repositories {
+        maven {
+            url layout.buildDirectory.dir('maven-repo')
+        }
+    }
+}

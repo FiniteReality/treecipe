@@ -1,0 +1,26 @@
+plugins {
+    id 'java-gradle-plugin'
+}
+
+repositories {
+    gradlePluginPortal()
+
+    maven {
+        url = 'https://maven.neoforged.net/releases'
+        name = "NeoForge Releases"
+    }
+}
+
+dependencies {
+    //noinspection DependencyNotationArgument
+    implementation neoforged.gradle.common
+}
+
+gradlePlugin {
+    plugins {
+        modLocator {
+            id = 'finitereality.modlocator'
+            implementationClass = 'finitereality.modlocator.ModLocatorPlugin'
+        }
+    }
+}

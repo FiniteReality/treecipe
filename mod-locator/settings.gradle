@@ -1,0 +1,74 @@
+pluginManagement {
+    includeBuild '../build-logic-commons'
+
+    repositories {
+        gradlePluginPortal()
+        maven {
+            url = 'https://maven.neoforged.net/releases'
+            name = "NeoForge Releases"
+        }
+    }
+}
+
+dependencyResolutionManagement {
+    repositories {
+        mavenCentral()
+
+        maven {
+            url = 'https://maven.neoforged.net/releases'
+            name = 'NeoForge Releases'
+            content {
+                includeGroup 'net.neoforged.fancymodloader'
+                includeGroup 'net.neoforged.gradle'
+                includeGroup 'net.neoforged'
+                includeGroup 'cpw.mods'
+            }
+        }
+    }
+
+    versionCatalogs {
+        libs {
+            library('jetbrains-annotations', 'org.jetbrains', 'annotations')
+                .version {
+                    require '[24.0.1,)'
+                    prefer '24.0.1'
+                }
+        }
+
+        neoforged {
+            version('neogradle') {
+                require '[7,)'
+                prefer '7.0.107'
+            }
+            version('fml') {
+                require '[2,)'
+                prefer '2.0.7'
+            }
+
+            library('fancymodloader-core', 'net.neoforged.fancymodloader', 'core')
+                .versionRef('fml')
+            library('fancymodloader-loader', 'net.neoforged.fancymodloader', 'loader')
+                .versionRef('fml')
+            library('fancymodloader-spi', 'net.neoforged.fancymodloader', 'spi')
+                .versionRef('fml')
+
+            bundle('fancymodloader', ['fancymodloader-core', 'fancymodloader-loader', 'fancymodloader-spi'])
+
+            library('gradle-common', 'net.neoforged.gradle', 'common')
+                .versionRef('neogradle')
+        }
+
+        slf4j {
+            library('api', 'org.slf4j', 'slf4j-api')
+                .version {
+                    require '[2.0,)'
+                    prefer '2.0.9'
+                }
+        }
+    }
+}
+
+rootProject.name = 'mod-locator'
+
+include 'modlocator'
+include 'neoforge'

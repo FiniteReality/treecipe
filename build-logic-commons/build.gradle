@@ -1,0 +1,11 @@
+plugins {
+    id 'groovy-gradle-plugin'
+}
+
+repositories {
+    gradlePluginPortal()
+}
+
+dependencies {
+    implementation 'org.gradlex:extra-java-module-info:1.6.1'
+}

@@ -1,0 +1,40 @@
+plugins {
+    id 'treecipe.neoform-conventions'
+}
+
+base.archivesName = rootProject.name
+
+sourceSets {
+    runtime {
+        java.srcDir 'src/runtime/java'
+    }
+}
+
+java {
+    registerFeature('runtime') {
+        usingSourceSet(sourceSets.runtime)
+    }
+}
+
+dependencies {
+    //noinspection DependencyNotationArgument
+    runtimeCompileOnly finitereality.annotations.common
+    //noinspection DependencyNotationArgument
+    compileOnly finitereality.annotations.common
+
+    runtimeCompileOnly "net.minecraft:neoform_joined:1.20.5-20240423.152201"
+    compileOnly "net.minecraft:neoform_joined:1.20.5-20240423.152201"
+
+    runtimeApi 'finitereality.treecipe:common'
+
+    //noinspection DependencyNotationArgument
+    api jgrapht.core
+}
+
+extraJavaModuleInfo {
+    // FML declares MC in a single module named 'minecraft'
+    automaticModule("net.minecraft:neoform_joined", "minecraft")
+
+    // Otherwise, use their automatic-module-name
+    deriveAutomaticModuleNamesFromFileNames = true
+}

@@ -1,0 +1,73 @@
+pluginManagement {
+    includeBuild '../build-logic'
+
+    repositories {
+        gradlePluginPortal()
+        maven {
+            url = 'https://maven.neoforged.net/releases'
+            name = "NeoForge Releases"
+        }
+    }
+}
+
+plugins {
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.8.0'
+}
+
+dependencyResolutionManagement {
+    repositories {
+        mavenCentral()
+
+        maven {
+            url = 'https://maven.neoforged.net/releases'
+            name = "NeoForge Releases"
+        }
+    }
+
+    versionCatalogs {
+        finitereality {
+            description = 'Common annotations logic'
+            library('annotations-common', 'finitereality.annotations', 'common')
+                .version {
+                    require '[0.1,)'
+                    prefer '0.1.0'
+                }
+        }
+
+        jetbrains {
+            description = 'Jetbrains\' Annotations'
+            library('annotations', 'org.jetbrains', 'annotations')
+                .version {
+                    require '[24.0.1,)'
+                    prefer '24.0.1'
+                }
+        }
+
+        jgrapht {
+            description = 'Graph libraries'
+            library('core', 'org.jgrapht', 'jgrapht-core')
+                .version {
+                    require '[1.5.2,1.6)'
+                    prefer '1.5.2'
+                }
+        }
+
+        mojang {
+            description = 'Minecraft versions'
+
+            version('minecraft') {
+                strictly '[1.20.5,1.21)'
+                prefer '1.20.5'
+            }
+        }
+
+        neoforged {
+            description = 'NeoForged project'
+
+            version('neoform') {
+                require '20.4.167'
+                prefer '20.4.167'
+            }
+        }
+    }
+}

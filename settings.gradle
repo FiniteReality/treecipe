@@ -1,0 +1,35 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+
+        maven {
+            url = 'https://maven.neoforged.net/releases'
+            name = "NeoForge Releases"
+        }
+    }
+}
+
+plugins {
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.8.0'
+}
+
+dependencyResolutionManagement {
+    repositories {
+        mavenCentral()
+
+        maven {
+            url = 'https://maven.neoforged.net/releases'
+            name = "NeoForge Releases"
+        }
+    }
+}
+
+rootProject.name = 'treecipe-workspace'
+
+includeBuild 'build-logic-commons'
+includeBuild 'annotations'
+includeBuild 'mod-locator'
+includeBuild 'build-logic'
+
+includeBuild 'common'
+includeBuild 'neoforge'

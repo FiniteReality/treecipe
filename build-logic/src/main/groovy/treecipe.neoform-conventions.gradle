@@ -1,0 +1,19 @@
+plugins {
+    id 'treecipe.library-conventions'
+    id 'net.neoforged.gradle.neoform'
+}
+
+configurations {
+    minecraft {
+        canBeResolved = true
+        canBeConsumed = false
+    }
+
+    compileClasspath.extendsFrom(minecraft)
+}
+
+tasks.named('jar', Jar).configure {
+    manifest {
+        attributes('FMLModType': 'GAMELIBRARY')
+    }
+}

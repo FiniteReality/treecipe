@@ -1,0 +1,117 @@
+plugins {
+    id 'treecipe.neoforge-conventions'
+}
+
+sourceSets {
+    runtime {
+        java.srcDir 'src/runtime/java'
+    }
+
+    main {
+        resources {
+            srcDir 'src/main/datagen'
+        }
+    }
+}
+
+jarJar {
+    forFeature 'runtime'
+}
+
+java {
+    registerFeature('runtime') {
+        usingSourceSet(sourceSets.runtime)
+    }
+}
+
+// TODO: this should be in modlocator
+configurations {
+    compileOnly {
+        extendsFrom(configurations.jarJar)
+    }
+    runtimeCompileOnly {
+        extendsFrom(configurations.runtimeJarJar)
+    }
+}
+
+dependencies {
+    //noinspection DependencyNotationArgument
+    runtimeCompileOnly finitereality.annotations.common
+    //noinspection DependencyNotationArgument
+    compileOnly finitereality.annotations.common
+
+    runtimeJarJar('finitereality.treecipe:neoforge') {
+        capabilities {
+            requireCapability "finitereality.treecipe:neoforge"
+        }
+        version {
+            require '[0.1,)'
+            prefer '0.1.0'
+        }
+    }
+    runtimeJarJar('finitereality.treecipe:common') {
+        capabilities {
+            requireCapability "finitereality.treecipe:common-runtime"
+        }
+        version {
+            require '[0.1,)'
+            prefer '0.1.0'
+        }
+    }
+    runtimeJarJar jgrapht.core
+
+    jarJar('finitereality.treecipe:common') {
+        capabilities {
+            requireCapability "finitereality.treecipe:common-runtime"
+        }
+        version {
+            require '[0.1,)'
+            prefer '0.1.0'
+        }
+    }
+
+    //noinspection DependencyNotationArgument
+    runtimeImplementation neoforged.neoforge
+
+    //noinspection DependencyNotationArgument
+    compileOnly neoforged.neoforge
+}
+
+runs {
+    configureEach {
+        modSource project.sourceSets.runtime
+        systemProperty 'log4j2.configurationFile', file('../log4j2.xml').toURI().toString()
+    }
+
+    client {
+        systemProperty 'forge.enabledGameTestNamespaces', rootProject.name
+    }
+
+    server {
+        systemProperty 'forge.enabledGameTestNamespaces', rootProject.name
+        programArgument '--nogui'
+    }
+
+    gameTestServer {
+        systemProperty 'forge.enabledGameTestNamespaces', rootProject.name
+    }
+
+    data {
+        programArguments.addAll(
+            '--mod', rootProject.name,
+            '--all',
+            '--output', file('src/main/datagen/').getAbsolutePath(),
+            '--existing', file('src/main/resources/').getAbsolutePath())
+    }
+}
+
+extraJavaModuleInfo {
+    deriveAutomaticModuleNamesFromFileNames = true
+}
+
+modInfo {
+    modProperties loader_version: neoforged.versions.loader,
+        neo_version: neoforged.versions.loader,
+        minecraft_version: mojang.versions.minecraft,
+        jei_version: 'e'
+}

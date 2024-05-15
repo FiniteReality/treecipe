@@ -1,0 +1,18 @@
+plugins {
+    id 'eclipse'
+    id 'idea'
+    id 'java'
+    id 'org.gradlex.extra-java-module-info'
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+java.toolchain.vendor = JvmVendorSpec.JETBRAINS
+
+// HACK: extra-java-module-info needs this attribute set
+configurations.runtimeElements.attributes.attribute(
+    Attribute.of("javaModule", Boolean),
+    true)
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}

@@ -1,0 +1,30 @@
+plugins {
+    id 'treecipe.library-conventions'
+}
+
+base.archivesName = 'modlocator'
+
+dependencies {
+    //noinspection DependencyNotationArgument
+    compileOnly libs.jetbrains.annotations
+    compileOnly 'finitereality.annotations:common'
+
+    //noinspection DependencyNotationArgument
+    compileOnly slf4j.api
+
+    //noinspection DependencyNotationArgument
+    compileOnly(neoforged.bundles.fancymodloader) {
+        transitive = false
+    }
+}
+
+extraJavaModuleInfo {
+    //failOnMissingModuleInfo = false
+    automaticModule("net.sf.jopt-simple:jopt-simple", "jopt.simple")
+}
+
+tasks.named('jar', Jar).configure {
+    manifest {
+        attributes('FMLModType': 'LIBRARY')
+    }
+}

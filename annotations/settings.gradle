@@ -1,0 +1,14 @@
+pluginManagement {
+    includeBuild '../build-logic'
+
+    repositories {
+        gradlePluginPortal()
+        maven {
+            url = 'https://maven.neoforged.net/releases'
+            name = "NeoForge Releases"
+        }
+    }
+}
+
+include 'common'
+include 'blittable'
